@@ -2,39 +2,49 @@ from simpleimage import SimpleImage, clamp, Pixel
 
 
 def darker(image, strength=2):
+    image1 = image
     if strength < 0:
         strength *= -1
-    for pixel in image:
+    for pixel in image1:
         pixel.red = pixel.red // strength
         pixel.green = pixel.green // strength
         pixel.blue = pixel.blue // strength
+    return image1
 
 
 def brighter(image, strength=2):
+    image1 = image
     if strength < 0:
         strength *= -1
-    for pixel in image:
+    for pixel in image1:
         pixel.red = clamp(pixel.red * strength)
         pixel.green = clamp(pixel.green * strength)
         pixel.blue = clamp(pixel.blue * strength)
+    return image1
 
 
 def red_channel(image):
-    for pixel in image:
+    image1 = image
+    for pixel in image1:
         pixel.green = 0
         pixel.blue = 0
+    return image1
 
 
 def green_channel(image):
-    for pixel in image:
+    image1 = image
+    for pixel in image1:
         pixel.red = 0
         pixel.blue = 0
+    return image1
 
 
 def blue_channel(image):
-    for pixel in image:
+    image1 = image
+    for pixel in image1:
         pixel.green = 0
         pixel.red = 0
+    return image1
 
 
 def cal_lum(red, green, blue):
@@ -42,20 +52,25 @@ def cal_lum(red, green, blue):
 
 
 def grayscale(image):
-    for pixel in image:
+    image1 = image
+    for pixel in image1:
         lum = cal_lum(pixel.red, pixel.green, pixel.blue)
         pixel.blue = lum
         pixel.green = lum
         pixel.red = lum
+    return image1
 
 
 def green_screen(front_image, back_image, threshold=1.6):
-    for pixel in back_image:
+    back_image.make_as_big_as(front_image)
+    image = back_image
+    for pixel in image:
         average = (pixel.red + pixel.blue + pixel.green) // 3
         if pixel.green >= average * threshold:
             x = pixel.x
             y = pixel.y
-            back_image.set_pixel(x, y, front_image.get_pixel(x, y))
+            image.set_pixel(x, y, front_image.get_pixel(x, y))
+    return image
 
 
 def combine_images(image1, image2, size):
@@ -100,10 +115,12 @@ def rotate(image, turns):
 
 
 def contrast(image, factor, mid=100):
-    for pixel in image:
+    image1 = image
+    for pixel in image1:
         pixel.green = (pixel.green - mid) * factor + mid
         pixel.red = (pixel.red - mid) * factor + mid
         pixel.blue = (pixel.blue - mid) * factor + mid
+    return image1
 
 
 def blur(image, kernel_size):
@@ -160,15 +177,53 @@ def combine_image_in_one(image1, image2):
 
 
 def main():
-    print("HI")
-    image1 = SimpleImage("1234.jpg")
-    image1.show()
-    kernel_x = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]
-    kernel_y = [[1, 0, -1], [2, 0, -2], [1, 0, -1]]
-    kernel = [[0, -1, 0], [-1, 4, -1], [0, -1, 0]]
-    apply_kernel(image1, kernel_x).show()
-    apply_kernel(image1, kernel_y).show()
-    combine_image_in_one(apply_kernel(image1, kernel_x), apply_kernel(image1, kernel_y)).show()
+    print("Start")
+
+    image1 = SimpleImage("city.png")
+
+    i1 = blur(image1, 3)
+    combine_images(image1, i1, 1).show()
+
+    i2 = blur(image1, 10)
+    combine_images(image1, i2, 1).show()
+
+    image2 = SimpleImage("1234.jpg")
+
+    kernel_x = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]]  # X edge detection kernel
+    kernel_y = [[1, 0, -1], [2, 0, -2], [1, 0, -1]]  # Y edge detection kernel
+
+    i3 = apply_kernel(image2, kernel_x)
+    combine_images(image2, i3, 1).show()
+
+    i4 = apply_kernel(image2, kernel_y)
+    combine_images(image2, i4, 1).show()
+
+    i5 = combine_image_in_one(i3, i4)
+    combine_images(image2, i5, 1).show()
+
+    image3 = SimpleImage("bird.jpg")
+    image4 = SimpleImage("green.jpg")
+    combine_images(image3, image4, 1).show()
+
+    i6 = green_screen(image3, image4)
+    i6.show()
+
+    image5 = SimpleImage("123.jpg")
+    i7 = grayscale(image5)
+    image5 = SimpleImage("123.jpg")
+    combine_images(image5, i7, 1).show()
+
+    image6 = SimpleImage("lake.png")
+    i8 = brighter(image6)
+    image6 = SimpleImage("lake.png")
+    combine_images(image6, i8, 1).show()
+
+    image7 = SimpleImage("lake.png")
+    i9 = contrast(image7, 3)
+    image7 = SimpleImage("lake.png")
+    combine_images(image7, i9, 1).show()
+
+    print("End")
 
 
 if __name__ == '__main__':

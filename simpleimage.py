@@ -226,3 +226,39 @@ class SimpleImage(object):
         size = self.pil_image.size
         self._width = size[0]
         self._height = size[1]
+
+
+def main():
+    """
+    main() exercises the features as a test.
+    1. With 1 arg like flowers.jpg - opens it
+    2. With 0 args, creates a yellow square with
+    a green stripe at the right edge.
+    """
+    args = sys.argv[1:]
+    if len(args) == 1:
+        image = SimpleImage.file(args[0])
+        image.show()
+        return
+
+    # Create yellow rectangle, using foreach iterator
+    image = SimpleImage.blank(400, 200)
+    for pixel in image:
+        pixel.red = 255
+        pixel.green = 255
+        pixel.blue = 0
+
+    # for pixel in image:
+    #     print(pixel)
+
+    # Set green stripe using pix access.
+    pix = image._get_pix_(0, 0)
+    green = (0, pix[1], 0)
+    for x in range(image.width - 10, image.width):
+        for y in range(image.height):
+            image._set_pix_(x, y, green)
+    image.show()
+
+
+if __name__ == '__main__':
+    main()
